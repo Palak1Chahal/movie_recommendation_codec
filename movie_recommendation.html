@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlixPick | Regional Movie Recommendations</title>
+  
+  <style>
+    /* RESET & CORE STYLES */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background-color: #0f1115;
+      color: #ffffff;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 8px;
+    }
+
+    h1 span {
+      color: #e50914; /* Cinematic Red */
+    }
+
+    header p {
+      color: #9ca3af;
+    }
+
+    /* FILTERS PANEL */
+    .filter-box {
+      background-color: #181b22;
+      padding: 20px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+      border: 1px solid #2e3545;
+    }
+
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    label {
+      font-size: 14px;
+      color: #9ca3af;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    select {
+      background-color: #222630;
+      color: white;
+      padding: 10px 15px;
+      border: 1px solid #2e3545;
+      border-radius: 6px;
+      font-size: 15px;
+      outline: none;
+      cursor: pointer;
+      min-width: 160px;
+    }
+
+    button {
+      background-color: #e50914;
+      color: white;
+      padding: 11px 28px;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #b8070f;
+    }
+
+    /* RESPONSIVE GRID CONFIG */
+    .movie-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 30px;
+    }
+
+    /* CARD DESIGN */
+    .movie-card {
+      background-color: #181b22;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #2e3545;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      transition: transform 0.2s;
+    }
+
+    .movie-card:hover {
+      transform: translateY(-5px);
+      border-color: #4f5b73;
+    }
+
+    .poster-container {
+      width: 100%;
+      height: 320px;
+      background-color: #222630;
+    }
+
+    .movie-poster {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .movie-info {
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex-grow: 1;
+    }
+
+    .movie-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .movie-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+
+    .movie-lang {
+      background-color: #222630;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .movie-rating {
+      color: #ffc107;
+      font-weight: bold;
+    }
+
+    .no-results {
+      grid-column: 1/-1;
+      text-align: center;
+      color: #9ca3af;
+      padding: 40px;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Flix<span>Pick</span></h1>
+      <p>Instant Movie Recommendations | Hindi, English & Punjabi</p>
+    </header>
+
+    <div class="filter-box">
+      <div class="filter-group">
+        <label for="moodSelect">Mood</label>
+        <select id="moodSelect">
+          <option value="all">Any Mood</option>
+          <option value="thrilling">Action / Thrilling</option>
+          <option value="happy">Feel-Good / Drama</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="langSelect">Language</label>
+        <select id="langSelect">
+          <option value="all">Any Language</option>
+          <option value="Hindi">Hindi</option>
+          <option value="English">English</option>
+          <option value="Punjabi">Punjabi</option>
+        </select>
+      </div>
+
+      <button id="matchBtn">✨ Find Movies</button>
+    </div>
+
+    <div class="movie-grid" id="movieGrid">
+      </div>
+  </div>
+
+  <script>
+    // Clean library containing only Hindi, English, and Punjabi titles
+    const movies = [
+      // HINDI
+      { title: "3 Idiots", mood: "happy", lang: "Hindi", rating: "8.4", poster: "https://upload.wikimedia.org/wikipedia/en/d/df/3_idiots_poster.jpg" },
+      { title: "Drishyam", mood: "thrilling", lang: "Hindi", rating: "8.2", poster: "https://upload.wikimedia.org/wikipedia/en/8/8a/Drishyam_2015_film_poster.jpg" },
+      { title: "Dilwale Dulhania Le Jayenge", mood: "happy", lang: "Hindi", rating: "8.0", poster: "https://upload.wikimedia.org/wikipedia/en/8/80/Dilwale_Dulhania_Le_Jayenge_poster.jpg" },
+      
+      // ENGLISH
+      { title: "Inception", mood: "thrilling", lang: "English", rating: "8.8", poster: "https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg" },
+      { title: "The Dark Knight", mood: "thrilling", lang: "English", rating: "9.0", poster: "https://upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29_poster.jpg" },
+      { title: "Forrest Gump", mood: "happy", lang: "English", rating: "8.8", poster: "https://upload.wikimedia.org/wikipedia/en/6/67/Forrest_Gump_poster.jpg" },
+      
+      // PUNJABI
+      { title: "Chaar Sahibzaade", mood: "thrilling", lang: "Punjabi", rating: "8.2", poster: "https://upload.wikimedia.org/wikipedia/en/2/27/Chaar_Sahibzaade_poster.jpg" },
+      { title: "Carry On Jatta 3", mood: "happy", lang: "Punjabi", rating: "7.6", poster: "https://upload.wikimedia.org/wikipedia/en/c/cb/Carry_on_Jatta_3_poster.jpg" },
+      { title: "Sardar Mohammad", mood: "happy", lang: "Punjabi", rating: "7.5", poster: "https://upload.wikimedia.org/wikipedia/en/f/f6/Sardar_Mohammad_poster.jpg" }
+    ];
+
+    const movieGrid = document.getElementById('movieGrid');
+    const moodSelect = document.getElementById('moodSelect');
+    const langSelect = document.getElementById('langSelect');
+    const matchBtn = document.getElementById('matchBtn');
+
+    function renderMovies(movieList) {
+      movieGrid.innerHTML = ""; 
+      
+      if (movieList.length === 0) {
+        movieGrid.innerHTML = `<div class="no-results"><h3>No movies found matching these filters. Try another combination!</h3></div>`;
+        return;
+      }
+
+      movieList.forEach(movie => {
+        movieGrid.innerHTML += `
+          <div class="movie-card">
+            <div class="poster-container">
+              <img src="${movie.poster}" class="movie-poster" alt="${movie.title}">
+            </div>
+            <div class="movie-info">
+              <div class="movie-title">${movie.title}</div>
+              <div class="movie-meta">
+                <span class="movie-lang">${movie.lang}</span>
+                <span class="movie-rating">⭐ ${movie.rating}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    matchBtn.addEventListener('click', () => {
+      const targetMood = moodSelect.value;
+      const targetLang = langSelect.value;
+      
+      const filteredResult = movies.filter(movie => {
+        const matchesMood = (targetMood === "all" || movie.mood === targetMood);
+        const matchesLang = (targetLang === "all" || movie.lang === targetLang);
+        return matchesMood && matchesLang;
+      });
+
+      renderMovies(filteredResult);
+    });
+
+    // Run layout automatically on startup
+    renderMovies(movies);
+  </script>
+
+</body>
+</html>
